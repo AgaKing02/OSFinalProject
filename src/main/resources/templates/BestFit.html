@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <title>Best Fit</title>
+
+
+</head>
+<style>
+
+
+    .preloader {
+        width: 100%;
+        height: 100%;
+        background: white;
+        position: fixed;
+        top: 0;
+        z-index: 100;
+        transition-duration: 3s;
+        display: none;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .loader {
+        width: 75px;
+        height: 75px;
+        border: 10px solid rgb(190, 186, 167);;
+        border-radius: 50%;
+        border-left-color: gold;
+        animation: loader 1.3s linear infinite;
+    }
+
+    @keyframes loader {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+<body>
+<div class="preloader">
+    <div class="loader"></div>
+</div>
+<div class="container text-center">
+    <div class="row text-center">
+        <div class="col-4">
+            <h3>Blocks:</h3><br>
+            <div id="blocks"></div>
+        </div>
+        <div class="col-4">
+            <div class="m-2 shadow p-2">
+                <label for="blockSize">Memory</label>
+                <input id="blockSize" type="number" name="blockSize">
+                <button class="btn btn-warning" onclick="addBlock()">Add</button>
+            </div>
+            <div class="m-2 shadow p-2">
+                <label for="processSize">Process</label>
+                <input id="processSize" type="number" name="processSize">
+                <button class="btn btn-warning" onclick="addProcess()">Add</button>
+            </div>
+
+            <div id="result"></div>
+        </div>
+        <div class="col-4">
+            <h3>Processes:</h3><br>
+            <div id="processes"></div>
+
+        </div>
+
+    </div>
+    <div class="loadingio-spinner-rolling-b8ks2crv2t">
+        <div class="ldio-5f0o3zz96xb">
+            <div></div>
+        </div>
+    </div>
+    <button id="submit" class="btn btn-success text-center" onclick="Run()">Run</button>
+</div>
+</body>
+<script>
+    let processes = [];
+    let blocks = [];
+    var blockSize = document.getElementById("blockSize");
+    var processSize = document.getElementById("processSize");
+
+
+    function addBlock() {
+        let block = blockSize.value;
+        blocks.push(block)
+        $("div#blocks").append("<button class='btn btn-success m-1'>" + block + "</button>")
+    }
+
+    function addProcess() {
+        let process = processSize.value;
+        processes.push(process)
+        $("div#processes").append("<button class='btn btn-danger m-1'>" + process + "</button>")
+    }
+
+    function Run() {
+        $.ajax({
+            type: "POST",
+            url: "/bestfit",
+            cache: false,
+            timeout: 60000,
+            data: {
+                "processes": processes,
+                "blocks": blocks
+            },
+            success: function (data) {
+                for (let i = 0; i < data.length; i++) {
+                    if(data[i].blockNumber!=="Not Allocated"){
+                        animation("green",data[i])
+                    }else {
+                      animation("red",data[i])
+                    }
+                }
+                console.log(data)
+            },
+            error: function (response, error, errorThrown) {
+                alert("Error")
+            }
+        });
+    }
+
+    function animation(color,data) {
+        let preloader = document.querySelector('.preloader');
+        let loader=document.querySelector('.loader');
+        preloader.style.display = 'flex';
+        loader.style.borderLeftColor=color;
+        setTimeout(() => {
+            preloader.style.display='none';
+            alert("Process Number: "+data.processNumber+"\n Process Size: "+data.processSize+"\n Block Number :"+data.blockNumber)
+        }, 600);
+    }
+
+
+</script>
+
+</html>
